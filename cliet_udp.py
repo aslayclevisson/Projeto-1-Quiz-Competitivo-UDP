@@ -10,6 +10,7 @@ def receber_dados():
 
 host = "localhost"
 port = 5556
+port_2 = 4443
 
 
 socket_cliente = socket(AF_INET, SOCK_DGRAM)
@@ -26,6 +27,7 @@ while iniciar:
 
     if mensagem != "":
         socket_cliente.sendto(mensagem.encode(), (host, port))
+        
         print("Cadastro efetuado com sucesso.\n")
         iniciar = False
     else:
@@ -38,5 +40,15 @@ def comunicar():
     resposta = input("Digite a resposta: ")
     socket_cliente.sendto(resposta.encode(), (host, port))
     print("Resposta enviada. \n")
+    socket_cliente.close()
 
 Thread(target= comunicar, args=()).start()
+
+"""
+def aguardar():
+    dados, endereco = socket_cliente.recvfrom(4096)
+    print(dados.decode())
+
+
+Thread(target = aguardar, args=()).start()
+"""

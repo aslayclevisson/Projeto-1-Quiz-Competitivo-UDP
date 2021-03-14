@@ -1,46 +1,59 @@
 from socket import  socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 
+#falta corrigir a continuação das perguntas obs remoer perguntas ja feitas
 
 
-
-def comunicacao(dados_cliente, endereco_cliente):
+def comunicacao(dados_cliente, endereco_cliente, participantes):
 
     iniciar_pergunta = True
-
+    arquivo_quiz = ler_arquivo()
+    cont = 0
     while iniciar_pergunta:
-        p_r= perguntas_respostas()
-        print(p_r[0])
-        
-        iniciar_pergunta = False
+       print(arquivo_quiz[cont][0])
+       cont+=1
+       iniciar_pergunta = False
 
     dados_cliente, endereco_cliente = socket_servidor.recvfrom(4096)
-    print(dados_cliente.decode())
-    if dados_cliente.decode() != p_r[1]:
+
+
+    print(f"O participante {participantes[endereco_cliente]} respondeu {dados_cliente.decode()}")
+
+    if dados_cliente.decode() != arquivo_quiz[0][1]:
   
         print("resposta incorreta")
     else:
-        r = "acertou"
-        socket_servidor.sendto(r.encode(), (host, port))
+        
         print("Resposta correta")
+    Thread(target=comunicacao, args=(dados_cliente, port, participantes)).start()
 
-    socket_servidor.close()
-"""
-def resposta(dados_cliente,endereco_cliente):
-    msg = "cliente conctado"
-    socket_servidor.sendto(msg.encode(), (host,port))
-    print("respota enviada")
+   
 
 
-def guardar_dados(dados_cliente, endereco_cliente):
-    participantes = {}
-    participantes[dados_cliente] = endereco_cliente
-    return participantes
-"""
-def perguntas_respostas():
+def pr():
     p1r1 = ("Qual é a cidade mais lida do mundo ?", "Recife")
     return p1r1
-    
+
+
+def ler_arquivo():
+
+    arquivo = open("perguntas_respostas.txt", "r")
+    dados = arquivo.readlines()
+
+    dadosModificado = []
+
+    lista_tuplas = []
+
+    for x in dados:
+        dadosModificado.append(x.strip())
+
+    cont = 0
+    while cont < len(dadosModificado)-1:
+        lista_tuplas.append((dadosModificado[cont], dadosModificado[cont+1]))
+        cont += 2
+
+    return lista_tuplas
+
 
 host = "localhost"
 port = 5556
@@ -49,25 +62,32 @@ port_2 =4443
 socket_servidor = socket(AF_INET, SOCK_DGRAM)
 socket_servidor.bind((host, port))
 
+participantes = {}
 
 print("Servidor On")
 
 
 conexao_start = True
 
-maximo = 0
 
-while conexao_start:
+
+while conexao_start and len(participantes) < 2:
     print("Aguardando requisições... \n")
     
     dados_cliente, endereco_cliente = socket_servidor.recvfrom(4096)
+    participantes[endereco_cliente] = dados_cliente.decode()
+    
     if dados_cliente.decode() != "":
         print(f"O participante {dados_cliente.decode()} foi cadastrado. \n")
-        #resposta(dados_cliente, endereco_cliente)
-        #guardar_dados(dados_cliente, endereco_cliente)
-        Thread(target=comunicacao, args=(dados_cliente, port)).start()
-   
-        conexao_start = False
+ 
+if len(participantes) == 2:
+    print("*********", participantes)
+        
+            #Thread(target=comunicacao, args=(dados_cliente, port)).start()
+
+        
+    Thread(target=comunicacao, args=(dados_cliente, port, participantes)).start()
+
 
 
 

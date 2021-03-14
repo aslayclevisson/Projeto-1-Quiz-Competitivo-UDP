@@ -44,11 +44,3 @@ def comunicar():
 
 Thread(target= comunicar, args=()).start()
 
-"""
-def aguardar():
-    dados, endereco = socket_cliente.recvfrom(4096)
-    print(dados.decode())
-
-
-Thread(target = aguardar, args=()).start()
-"""

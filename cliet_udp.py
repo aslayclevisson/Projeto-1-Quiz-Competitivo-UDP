@@ -2,46 +2,20 @@ from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 
 
-def receber_dados():
-    dados, endereco = socket_cliente.recvfrom(4096)
-    print(dados.decode())
- 
-
-
-host = "localhost"
-port = 5556
-port_2 = 4443
-
-
 socket_cliente = socket(AF_INET, SOCK_DGRAM)
-
-
-socket_cliente.connect((host, port))
 
 iniciar = True
 
-
 while iniciar:
-    mensagem = input("Digite o seu nickname: ")
-    
 
+    mensagem = input("Digite o seu login para se conectar: ")
     if mensagem != "":
-        socket_cliente.sendto(mensagem.encode(), (host, port))
-        
-        print("Cadastro efetuado com sucesso.\n")
-        iniciar = False
+        mensagem_codificada = mensagem.encode()
+        socket_cliente.sendto(mensagem_codificada, ("localhost", 9090))
+
+        resposta_servidor = socket_cliente.recvfrom(1024)
+        if str(resposta_servidor[0].decode()) == "101":
+            print("Participante Cadastrado.")
+            
     else:
-        print("Nickname inválido, nickname vázio, digite novamente.")
-
-
-
-def comunicar():
-    
-    resposta = input("Digite a resposta: ")
-    socket_cliente.sendto(resposta.encode(), (host, port))
-    print("Resposta enviada. \n")
-    socket_cliente.close()
-
-Thread(target= comunicar, args=()).start()
-
-#testanto mudança
+        print("Nome inválido, tente novamente. \r\n")

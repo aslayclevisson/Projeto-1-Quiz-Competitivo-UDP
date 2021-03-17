@@ -44,3 +44,4 @@ def comunicar():
 
 Thread(target= comunicar, args=()).start()
 
+#testanto mudança

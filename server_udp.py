@@ -37,10 +37,13 @@ def iniciar_partida(mensagem_cliente, participantes, valor):
 
 def perguntar(participantes, perguntas_e_respostas, valor):
 
+    lista = [0,1]
+    pegar = random.choice(lista)
+    
 
     for endereco in participantes:
 
-        pergunta = str.encode(perguntas_e_respostas[valor][0])
+        pergunta = str.encode(perguntas_e_respostas[pegar][0])
         
         socket_servidor.sendto(pergunta, (endereco))
 
@@ -53,23 +56,26 @@ def perguntar(participantes, perguntas_e_respostas, valor):
         qtd_msg +=1
 
     for k, v in dic_resposta.items():
-        if v == perguntas_e_respostas[valor][1]:
+        if v == perguntas_e_respostas[pegar][1]:
             print(f"O(A) jogador(a) {participantes[k][0].decode()} acertou a resposta")
-            resposta_1_cliente = str.encode("Você acertou a resposta")
+            participantes[k][1] += 25
+            resposta_1_cliente = str.encode(f"Você acertou a resposta sua pontuação atua é {participantes[k][1]}")
             socket_servidor.sendto(resposta_1_cliente, (k))
         else:
             print(f"O(A) jogador(a) {participantes[k][0].decode()} errou a resposta")
-            resposta_1_cliente = str.encode("Você errou a resposta")
+            participantes[k][1] -= 5
+            resposta_1_cliente = str.encode(f"Você errou a resposta sua pontuação atua é {participantes[k][1]}")
             socket_servidor.sendto(resposta_1_cliente, (k))
 
-    
+    del lista[pegar]
     valor +=1
     if valor != 2:#mudar para 5 depois
         Thread(target=perguntar, args=(participantes, perguntas_e_respostas, valor)).start()
     else:
         resposta = "500"
         resposta_cliente = str.encode(resposta)
-        socket_servidor.sendto(resposta_cliente, endereco_cliente)
+        for x, y in dic_resposta.items():
+            socket_servidor.sendto(resposta_cliente, x)
         print("FINISH")
 
 # implementar aleatoriedade das perguntas

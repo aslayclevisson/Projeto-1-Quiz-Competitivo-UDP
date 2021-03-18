@@ -5,19 +5,31 @@ from threading import Thread
 def esperar():
     print("Aguardando Jogadores")
     resposta_servidor = socket_cliente.recvfrom(1024)
+   
     print(str(resposta_servidor[0].decode()))
-
     responder()
+        
+   
 
 
 
 def responder():
     resposta_servidor = socket_cliente.recvfrom(1024)
-    print(str(resposta_servidor[0].decode()))
-    mensagem = input("Digite sua resposta: ")
-    mensagem_codificada = mensagem.encode()
-    socket_cliente.sendto(mensagem_codificada, ("localhost", 9090))
-    print("Resposta enviada")
+    if str(resposta_servidor[0].decode()) != "500":
+        print(str(resposta_servidor[0].decode()))
+        mensagem = input("Digite sua resposta: ")
+        mensagem_codificada = mensagem.encode()
+        socket_cliente.sendto(mensagem_codificada, ("localhost", 9090))
+        print("Resposta enviada \r\n")
+        resposta_servidor = socket_cliente.recvfrom(1024)
+        print(str(resposta_servidor[0].decode()))
+        responder()
+    else:
+        print("Fim de jogo")
+    
+    
+    
+
 
 
 socket_cliente = socket(AF_INET, SOCK_DGRAM)

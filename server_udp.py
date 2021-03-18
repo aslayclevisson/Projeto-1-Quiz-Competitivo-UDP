@@ -4,14 +4,6 @@ import random
 
 
 
-def iniciar_partida(mensagem_cliente, participantes):
-   
-    for endereco in participantes.keys():
-        socket_servidor.sendto(str.encode(mensagem_cliente), endereco)
-    print("A resposta foi enviada aos jogadores \n")
-
-    perguntar(participantes, perguntas_e_respostas)
-
 
 def ler_arquivo():
 
@@ -33,41 +25,71 @@ def ler_arquivo():
     return lista_tuplas
 
 
-def perguntar(participantes, perguntas_e_respostas):
- 
-    if len(perguntas_e_respostas) != 0:
-        num_aleatorio = random.randint(0,1)
-        for endereco in participantes:
-            
-            pergunta = str.encode(perguntas_e_respostas[num_aleatorio][0])
-            socket_servidor.sendto(pergunta, (endereco))
-       
-        mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
-                
- 
-        if mensagem_cliente.decode() == perguntas_e_respostas[num_aleatorio][1]:
-            for pessoa in participantes.keys():
-                if pessoa == endereco_cliente:
-                    print(f"O(A) Jogadoror(a) {participantes[endereco_cliente].decode()} acertou")
-          
+def iniciar_partida(mensagem_cliente, participantes, valor):
+    
+    for endereco in participantes.keys():
+        socket_servidor.sendto(str.encode(mensagem_cliente), (endereco))
+        print("A pergunta foi enviada aos jogadores \n")
 
-# Falta implementar receber a resposta de vários jogadores
-  
+   
+    perguntar(participantes, perguntas_e_respostas, valor)
+    
+
+def perguntar(participantes, perguntas_e_respostas, valor):
+
+
+    for endereco in participantes:
+
+        pergunta = str.encode(perguntas_e_respostas[valor][0])
         
+        socket_servidor.sendto(pergunta, (endereco))
+
+    qtd_msg = 0
+    dic_resposta = {}
+    while qtd_msg < 2:#valor vai aumentar para 5
+        mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
+        dic_resposta[endereco_cliente] = mensagem_cliente.decode()
+        print(f"MSG: {mensagem_cliente.decode()} do(a) jogador(a) {participantes[endereco_cliente][0].decode()}")
+        qtd_msg +=1
+
+    for k, v in dic_resposta.items():
+        if v == perguntas_e_respostas[valor][1]:
+            print(f"O(A) jogador(a) {participantes[k][0].decode()} acertou a resposta")
+            resposta_1_cliente = str.encode("Você acertou a resposta")
+            socket_servidor.sendto(resposta_1_cliente, (k))
+        else:
+            print(f"O(A) jogador(a) {participantes[k][0].decode()} errou a resposta")
+            resposta_1_cliente = str.encode("Você errou a resposta")
+            socket_servidor.sendto(resposta_1_cliente, (k))
+
+    
+    valor +=1
+    if valor != 2:#mudar para 5 depois
+        Thread(target=perguntar, args=(participantes, perguntas_e_respostas, valor)).start()
+    else:
+        resposta = "500"
+        resposta_cliente = str.encode(resposta)
+        socket_servidor.sendto(resposta_cliente, endereco_cliente)
+        print("FINISH")
+
+# implementar aleatoriedade das perguntas
+            
+
 
 socket_servidor = socket(AF_INET, SOCK_DGRAM)
 socket_servidor.bind(("localhost", 9090))
 conexao_start = True
-
+valor = 0
 participantes = {}
 perguntas_e_respostas = ler_arquivo()
-#testando com 2 
+
+# testando com 2
 
 while conexao_start and len(participantes) < 2:
     print("Aguardando requisições... \r\n")
 
     mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
-    participantes[endereco_cliente] = mensagem_cliente
+    participantes[endereco_cliente] = [mensagem_cliente, 0]
     print(f"O/A participante {mensagem_cliente.decode()} entrou")
 
     resposta = "101"
@@ -77,5 +99,6 @@ while conexao_start and len(participantes) < 2:
 
 
 if len(participantes) == 2:
-    mensagem_cliente = "O jogo vai começar! '200 ok'"
-    Thread(target=iniciar_partida, args=(mensagem_cliente, participantes )).start()
+    mensagem_start = "O jogo vai começar! '200 ok'"
+    
+    Thread(target=iniciar_partida, args=(mensagem_start, participantes, valor)).start()

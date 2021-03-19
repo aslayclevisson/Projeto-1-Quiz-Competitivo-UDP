@@ -45,10 +45,12 @@ while iniciar:
 
         resposta_servidor = socket_cliente.recvfrom(1024)
         if str(resposta_servidor[0].decode()) == "101":
-            print(f"O(A) jogadoror(a) {mensagem} foi Cadastrado(a) '101 Confirmado'.")
+            print(f"O(A) jogadoror(a) {mensagem} foi Cadastrado(a).")
             iniciar = False
 
     else:
+        #mensagem_codificada = mensagem.encode()
+        #socket_cliente.sendto(mensagem_codificada, ("localhost", 9090))
         print("Nome inválido, tente novamente. \r\n")
 
 if iniciar == False:

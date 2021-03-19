@@ -78,7 +78,7 @@ def perguntar(participantes, perguntas_e_respostas, valor):
             socket_servidor.sendto(resposta_cliente, x)
         print("FINISH")
 
-# implementar aleatoriedade das perguntas
+# implementar o time
             
 
 
@@ -105,6 +105,7 @@ while conexao_start and len(participantes) < 2:
 
 
 if len(participantes) == 2:
-    mensagem_start = "O jogo vai começar! '200 ok'"
+    print("200 OK \r\n")
+    mensagem_start = "O jogo vai começar!"
     
     Thread(target=iniciar_partida, args=(mensagem_start, participantes, valor)).start()

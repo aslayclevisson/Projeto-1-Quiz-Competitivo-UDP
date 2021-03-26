@@ -67,7 +67,7 @@ def respostas(participantes, perguntas_e_respostas, valor):
 
     qtd_msg = 0
     dic_resposta = {}
-    while qtd_msg < 1:  # testando 2 cliente
+    while qtd_msg < qtd_clientes:  # testando 2 cliente
         
         mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
         if endereco_cliente in participantes.keys():
@@ -153,12 +153,12 @@ socket_servidor.bind(("localhost", 9090))
 conexao_start = True
 valor = 0
 participantes = {}
-
+qtd_clientes = 1
 
 
 # testando com 2
 
-while conexao_start and len(participantes) < 1:  # testando 2 cliente
+while conexao_start and len(participantes) < qtd_clientes:  # testando 2 cliente
     
     print()
     print("Aguardando requisições... \r\n")
@@ -173,7 +173,7 @@ while conexao_start and len(participantes) < 1:  # testando 2 cliente
     print("Resposta enviada para o/a participante \r\n")
 
 
-if len(participantes) == 1:  # testando 2 cliente
+if len(participantes) == qtd_clientes:  # testando 2 cliente
     print("200 OK \r\n")
 
     mensagem_start = "O jogo vai começar!"

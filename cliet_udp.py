@@ -8,7 +8,7 @@ import time
 def esperar(partita_iniciada):
     print()
     
-    if partita_iniciada == 1: 
+    if partita_iniciada == qtd_clientes:
         print("Aguardando Jogadores \r\n")
         resposta_servidor = socket_cliente.recvfrom(1024)
     
@@ -53,6 +53,8 @@ def ranking():
 iniciar = True
 socket_cliente = socket(AF_INET, SOCK_DGRAM)
 
+qtd_clientes = 1
+
 partita_iniciada = []
 while iniciar:
     print()
@@ -72,7 +74,8 @@ while iniciar:
             iniciar = False
 
             partita_iniciada[0] += 1
-            if partita_iniciada[0] <= 1:  # tentando com 2 mudar para 5 depois
+            # tentando com 2 mudar para 5 depois
+            if partita_iniciada[0] <= qtd_clientes:
                 Thread(target=esperar, args=(partita_iniciada)).start()
             
         else:

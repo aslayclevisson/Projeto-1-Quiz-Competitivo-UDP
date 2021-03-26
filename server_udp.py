@@ -1,6 +1,8 @@
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 import random
+import multiprocessing
+import time
 
 
 
@@ -35,10 +37,12 @@ def iniciar_partida(mensagem_cliente, participantes, valor):
     perguntar(participantes, perguntas_e_respostas, valor)
     
 
+
 def perguntar(participantes, perguntas_e_respostas, valor):
 
     lista = [0,1]
     pegar = random.choice(lista)
+    
     
 
     for endereco in participantes:
@@ -49,51 +53,101 @@ def perguntar(participantes, perguntas_e_respostas, valor):
 
     qtd_msg = 0
     dic_resposta = {}
-    while qtd_msg < 2:#valor vai aumentar para 5
+    while qtd_msg < 2:#valor vai aumentar para 5 define a quantidade de clientes
+    
         mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
-        dic_resposta[endereco_cliente] = mensagem_cliente.decode()
-        print(f"MSG: {mensagem_cliente.decode()} do(a) jogador(a) {participantes[endereco_cliente][0].decode()}")
-        qtd_msg +=1
+        if endereco_cliente in participantes.keys():
+            dic_resposta[endereco_cliente] = mensagem_cliente.decode()
+            print(f"MSG: {mensagem_cliente.decode()} do(a) jogador(a) {participantes[endereco_cliente][0].decode()}")
+            qtd_msg +=1
+
+        else:
+            resposta_negação = "410"
+            print(">>>Jogador tentando se conetar, mas foi recusado<<<")
+            socket_servidor.sendto(resposta_negação.encode(),(endereco_cliente))
 
     for k, v in dic_resposta.items():
         if v == perguntas_e_respostas[pegar][1]:
             print(f"O(A) jogador(a) {participantes[k][0].decode()} acertou a resposta")
             participantes[k][1] += 25
             resposta_1_cliente = str.encode(f"Você acertou a resposta sua pontuação atua é {participantes[k][1]}")
+            
             socket_servidor.sendto(resposta_1_cliente, (k))
         else:
             print(f"O(A) jogador(a) {participantes[k][0].decode()} errou a resposta")
             participantes[k][1] -= 5
             resposta_1_cliente = str.encode(f"Você errou a resposta sua pontuação atua é {participantes[k][1]}")
             socket_servidor.sendto(resposta_1_cliente, (k))
+            
+    
+    del lista[pegar-1]
+    
 
-    del lista[pegar]
     valor +=1
+    
+   
     if valor != 2:#mudar para 5 depois
+        
         Thread(target=perguntar, args=(participantes, perguntas_e_respostas, valor)).start()
     else:
+
+        lista_pontos = []
+
+        for k, v in participantes.items():
+            pontuação = v[1]
+            lista_pontos.append(pontuação)
+
+        lista_pontos_ordenada = sorted(lista_pontos)
+        lista_ordenada = []
+        cont = 0
+        
+        
+        while len(lista_ordenada) < len(participantes):
+            for v in participantes.values():
+                if v[1] == lista_pontos_ordenada[cont]:
+                    lista_ordenada.append(v[1])
+            cont +=1
+
+        
         resposta = "500"
         resposta_cliente = str.encode(resposta)
         for x, y in dic_resposta.items():
             socket_servidor.sendto(resposta_cliente, x)
-        print("FINISH")
+        
+        listão = []
+        for x in participantes.values():
+            listão.append(x)
+
+        listão_ord = sorted(listão, key=lambda listao:[1])
+       
+         
+        for x in  listão_ord:
+            for y in participantes.keys():
+                classificacao = str.encode( f"A pontuação do(a) jogardor(a) {x[0].decode()} foi de: {x[1]} pontos.")
+                socket_servidor.sendto(classificacao, y)
+
 
 # implementar o time
-            
 
 
+
+perguntas_e_respostas = ler_arquivo()
 socket_servidor = socket(AF_INET, SOCK_DGRAM)
 socket_servidor.bind(("localhost", 9090))
+
 conexao_start = True
 valor = 0
 participantes = {}
-perguntas_e_respostas = ler_arquivo()
+
+
 
 # testando com 2
 
-while conexao_start and len(participantes) < 2:
+while conexao_start and len(participantes) < 2:  # valor vai aumentar para 5
+    
+    print()
     print("Aguardando requisições... \r\n")
-
+    
     mensagem_cliente, endereco_cliente = socket_servidor.recvfrom(1024)
     participantes[endereco_cliente] = [mensagem_cliente, 0]
     print(f"O/A participante {mensagem_cliente.decode()} entrou")
@@ -104,8 +158,11 @@ while conexao_start and len(participantes) < 2:
     print("Resposta enviada para o/a participante \r\n")
 
 
-if len(participantes) == 2:
+if len(participantes) == 2:  # valor vai aumentar para 5
     print("200 OK \r\n")
+
     mensagem_start = "O jogo vai começar!"
     
     Thread(target=iniciar_partida, args=(mensagem_start, participantes, valor)).start()
+
+

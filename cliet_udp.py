@@ -42,13 +42,13 @@ def ranking():
     for _ in range(2):  # testando 2 cliente
         resposta_servidor = socket_cliente.recvfrom(1024)
         print(str(resposta_servidor[0].decode()))
-    # socket_cliente.close()
+    socket_cliente.close()
 
 
 iniciar = True
 socket_cliente = socket(AF_INET, SOCK_DGRAM)
 
-qtd_clientes = 1
+qtd_clientes = 2
 
 partita_iniciada = []
 while iniciar:
@@ -68,7 +68,7 @@ while iniciar:
 
             iniciar = False
 
-            partita_iniciada[0] += 1
+            partita_iniciada[0] += qtd_clientes
             # tentando com 2 mudar para 5 depois
             if partita_iniciada[0] <= qtd_clientes:
                 Thread(target=esperar, args=(partita_iniciada)).start()

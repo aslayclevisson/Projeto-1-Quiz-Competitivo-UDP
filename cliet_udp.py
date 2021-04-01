@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
+from inputimeout import inputimeout, TimeoutOccurred
 import multiprocessing
 import time
 
@@ -22,7 +23,11 @@ def responder():
 
     if str(resposta_servidor[0].decode()) != "500":
         print(str(resposta_servidor[0].decode()))
-        mensagem = input("Digite sua resposta: ")
+        try:
+            mensagem = inputimeout(prompt="Digite sua resposta: ", timeout=5)
+        except TimeoutOccurred:
+            mensagem = "nao respondeu"
+
         mensagem_codificada = mensagem.encode()
         socket_cliente.sendto(mensagem_codificada, ("localhost", 9090))
         print("Resposta enviada... \r\n")
